@@ -1,0 +1,15 @@
+{% load static %}
+
+<li>
+    <article class="post">
+        <a href="{% url 'post-details-page' slug=post.slug%}">
+            {# We use the add filter to construct the path dynamically#}
+            <img src="{% static 'blog/images/'|add:post.image %}" alt="{{post.title}}"/>
+            <div class="post_content">
+                {# we use the post.title instead of post['title']#}
+                <h3>{{post.title}}</h3>
+                <p>{{post.excerpt}}</p>
+            </div>
+        </a>
+    </article>
+</li>
