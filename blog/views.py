@@ -1,88 +1,24 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from datetime import date
-# # Add dummy data
 
-all_posts = [
-    {
-        "slug": "hike-in-the-mountains",
-        "image": "mountains.jpg",
-        "author": "Lorem Ipsum",
-        "date": date(2023, 8, 3),
-        "title": "Mountain Hiking",
-        "excerpt": "There's nothing like the views you get when hiking in the mountains! And I wasn't even prepared for what happened whilst I was enjoying the view!",
-        "content": """
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis nobis
-          aperiam est praesentium, quos iste consequuntur omnis exercitationem quam
-          velit labore vero culpa ad mollitia? Quis architecto ipsam nemo. Odio.
-
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis nobis
-          aperiam est praesentium, quos iste consequuntur omnis exercitationem quam
-          velit labore vero culpa ad mollitia? Quis architecto ipsam nemo. Odio.
-
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis nobis
-          aperiam est praesentium, quos iste consequuntur omnis exercitationem quam
-          velit labore vero culpa ad mollitia? Quis architecto ipsam nemo. Odio.
-        """
-    },
-    {
-        "slug": "programming-is-fun",
-        "image": "coding.jpg",
-        "author": "Lorem Ipsum",
-        "date": date(2023, 8, 2),
-        "title": "Programming Is Great!",
-        "excerpt": "Did you ever spend hours searching that one error in your code? Yep - that's what happened to me yesterday...",
-        "content": """
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis nobis
-          aperiam est praesentium, quos iste consequuntur omnis exercitationem quam
-          velit labore vero culpa ad mollitia? Quis architecto ipsam nemo. Odio.
-
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis nobis
-          aperiam est praesentium, quos iste consequuntur omnis exercitationem quam
-          velit labore vero culpa ad mollitia? Quis architecto ipsam nemo. Odio.
-
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis nobis
-          aperiam est praesentium, quos iste consequuntur omnis exercitationem quam
-          velit labore vero culpa ad mollitia? Quis architecto ipsam nemo. Odio.
-        """
-    },
-    {
-        "slug": "into-the-woods",
-        "image": "woods.jpg",
-        "author": "Lorem Ipsum",
-        "date": date(2023, 8, 1),
-        "title": "Nature At Its Best",
-        "excerpt": "Nature is amazing! The amount of inspiration I get when walking in nature is incredible!",
-        "content": """
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis nobis
-          aperiam est praesentium, quos iste consequuntur omnis exercitationem quam
-          velit labore vero culpa ad mollitia? Quis architecto ipsam nemo. Odio.
-
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis nobis
-          aperiam est praesentium, quos iste consequuntur omnis exercitationem quam
-          velit labore vero culpa ad mollitia? Quis architecto ipsam nemo. Odio.
-
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis nobis
-          aperiam est praesentium, quos iste consequuntur omnis exercitationem quam
-          velit labore vero culpa ad mollitia? Quis architecto ipsam nemo. Odio.
-        """
-    }
-]
-
+from .models import Post
 
 # healper function for date sorting
+
+
 def get_date(post):
     return post['date']
 
 
 def starting_page(request):
-    sorted_posts = sorted(all_posts, key=get_date)
-    # use list slicing to get last 3 items
-    latest_posts = sorted_posts[-3:]
+    # adding the minus means that we order in desc// slicing to get first 3 (sql command will be built accordingly)
+    latest_posts = Post.objects.all().order_by("-date")[:3]
     # push the latest posts to the view
     return render(request, "blog/index.html", {"posts": latest_posts})
 
 
 def posts(request):
+    all_posts = Post.objects.all().order_by("-date")
     # push all posts to the view
     return render(request, "blog/all-posts.html", {"all_posts": all_posts})
 
@@ -90,6 +26,12 @@ def posts(request):
 # adding the slug as a parameter for the view function
 def post_details(request, slug):
     # use the slug to get the post from the list using next function
-    # and list comprehension
-    target_post = next(post for post in all_posts if post['slug'] == slug)
-    return render(request, "blog/post-details.html", {"post": target_post})
+    # target_post =Post.objects.get(slug=slug)
+    # a better practice to use get_object_or_404
+    target_post = get_object_or_404(Post, slug=slug)
+    return render(request, "blog/post-details.html", {
+        "post": target_post,
+        # as its a many to many relation so it cannot be read directly through the post model
+        # it should be handled like this unlike the author which is a one to many relation
+        "post_tags": target_post.tags.all()
+    })
