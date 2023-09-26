@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Post, Author, Tag
+from .models import Post, Author, Tag, Comment
 
 
 # create a post admin class to customize how to display the post model in the admin panel
@@ -12,8 +12,13 @@ class PostAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
 
 
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ("user_name", "post",)
+
+
 # Register models in the admin panel
 # load admin class with the main class
 admin.site.register(Post, PostAdmin)
 admin.site.register(Author)
 admin.site.register(Tag)
+admin.site.register(Comment, CommentAdmin)
